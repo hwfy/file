@@ -76,7 +76,7 @@ func AppendContent(fileName, content string) error {
 	return nil
 }
 
-//GetContent gets the contents of the specified file
+// GetContent gets the contents of the specified file
 func GetContent(fileName string) ([]byte, error) {
 	return ioutil.ReadFile(fileName)
 }
