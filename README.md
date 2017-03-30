@@ -57,11 +57,11 @@ func main() {
 	fmt.Printf("%s:\n %s", name, content)
 
 	// OutPut:
-	library : map[book_2:Book2 book_1:Book1 food_1:Food1]
-	food_1.go:
- 	 hello food_1
- 	 test append
-	food_1.go:
- 	 hello food_1
+	// library : map[book_2:Book2 book_1:Book1 food_1:Food1]
+	// food_1.go:
+ 	//  hello food_1
+ 	//  test append
+	// food_1.go:
+ 	//  hello food_1
 }
 ```
