@@ -28,11 +28,6 @@ func Save(dirName, fileName string, fileBuf []byte) (int64, error) {
 	return io.Copy(file, buf)
 }
 
-//Get gets the contents of the specified file
-func Get(dirName, fileName string) ([]byte, error) {
-	return ioutil.ReadFile(dirName + "/" + fileName)
-}
-
 // Del delete all matching files,such as Del(library, book)
 //
 // -library ( before )
@@ -79,6 +74,11 @@ func AppendContent(fileName, content string) error {
 		}
 	}
 	return nil
+}
+
+//GetContent gets the contents of the specified file
+func GetContent(fileName string) ([]byte, error) {
+	return ioutil.ReadFile(fileName)
 }
 
 // RemoveLine delete the specified row according to the character line
