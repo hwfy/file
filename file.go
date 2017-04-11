@@ -118,16 +118,16 @@ func MkDir(paths ...string) {
 //
 // Names(library): map[string]string{"book_a":"Booka","book_b":"Bookb","food_c":"Foodc"}
 func Names(dirName string) (map[string]string, error) {
+	list := make(map[string]string)
+
 	file, err := os.OpenFile(dirName, os.O_RDONLY, 0644)
 	if err != nil {
-		return nil, err
+		return list, err
 	}
 	names, err := file.Readdirnames(0)
 	if err != nil {
-		return nil, err
+		return list, err
 	}
-	list := make(map[string]string)
-
 	for _, name := range names {
 		//Remove the extension
 		prefix := strings.SplitN(name, ".", 2)
