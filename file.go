@@ -56,13 +56,13 @@ func Del(dirName, fileName string) error {
 func AppendContent(fileName, content string) error {
 	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
-		return fmt.Errorf("Open failed,%s", err)
+		return err
 	}
 	defer file.Close()
 
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf("Reading failed,%s", err)
+		return err
 	}
 	//exist, _ := regexp.Match(content, data)
 
@@ -70,7 +70,7 @@ func AppendContent(fileName, content string) error {
 	if !strings.Contains(string(data), content) {
 		_, err = file.Write([]byte(content))
 		if err != nil {
-			return fmt.Errorf("Write failed,%s", err)
+			return err
 		}
 	}
 	return nil
@@ -85,7 +85,7 @@ func GetContent(fileName string) ([]byte, error) {
 func RemoveLine(fileName, line string) error {
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		return fmt.Errorf("Reading failed,%s", err)
+		return err
 	}
 	//escapes the special character \.+*?()|[]{}^$
 	line = regexp.QuoteMeta(line)
@@ -97,11 +97,7 @@ func RemoveLine(fileName, line string) error {
 	}
 	text := reg.ReplaceAllString(string(data), "")
 
-	err = ioutil.WriteFile(fileName, []byte(text), 0777)
-	if err != nil {
-		return fmt.Errorf("Write failed,%s", err)
-	}
-	return nil
+	return ioutil.WriteFile(fileName, []byte(text), 0777)
 }
 
 // MkDir if the directory does not exist it is created, you can specify multiple directory names
@@ -124,11 +120,11 @@ func MkDir(paths ...string) {
 func Names(dirName string) (map[string]string, error) {
 	file, err := os.OpenFile(dirName, os.O_RDONLY, 0644)
 	if err != nil {
-		return nil, fmt.Errorf("Open failed,%s", err)
+		return nil, err
 	}
 	names, err := file.Readdirnames(0)
 	if err != nil {
-		return nil, fmt.Errorf("Reading failed,%s", err)
+		return nil, err
 	}
 	list := make(map[string]string)
 

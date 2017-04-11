@@ -1,11 +1,13 @@
 package file
 
 import (
+	"strings"
 	"testing"
 )
 
-func TestSave(t *testing.T) {
+func TestFile(t *testing.T) {
 	dir := "library"
+	path := "library/food_1.go"
 	files := map[string]string{
 		"book_1.go": "hello book_1\n",
 		"book_2.go": "hello book_2\n",
@@ -17,55 +19,35 @@ func TestSave(t *testing.T) {
 			t.Error(err)
 		}
 	}
-	names, err := Names(dir)
-	if err != nil {
-		t.Error(err)
-	} else {
-		t.Logf("%s contains the file name: %s", dir, names)
-	}
 
-}
-
-func TestDel(t *testing.T) {
-	dir := "library"
 	err := Del(dir, "book")
 	if err != nil {
 		t.Error(err)
 	}
+
 	names, err := Names(dir)
 	if err != nil {
 		t.Error(err)
-	} else {
-		t.Logf("%s contains the file name: %s", dir, names)
 	}
-}
+	if names["food_1"] != "Food1" {
+		t.Errorf("The value of food_1 should be Food1, but it is %s", names["food_1"])
+	}
 
-func TestAppendContent(t *testing.T) {
-	path := "library/food_1.go"
-
-	err := AppendContent(path, " test append\n")
+	err = AppendContent(path, " test append\n")
 	if err != nil {
 		t.Error(err)
 	}
+
+	err = RemoveLine(path, " test append")
+	if err != nil {
+		t.Error(err)
+	}
+
 	content, err := GetContent(path)
 	if err != nil {
 		t.Error(err)
-	} else {
-		t.Logf("the contents of the file %s:\n %s", path, content)
 	}
-}
-
-func TestRemoveLine(t *testing.T) {
-	path := "library/food_1.go"
-
-	err := RemoveLine(path, " test append")
-	if err != nil {
-		t.Error(err)
-	}
-	content, err := GetContent(path)
-	if err != nil {
-		t.Error(err)
-	} else {
-		t.Logf("the contents of the file %s:\n %s", path, content)
+	if strings.TrimSpace(string(content)) != "hello food_1" {
+		t.Errorf("The contents of the file %s should be 'hello food_1', but it is '%s'", path, content)
 	}
 }
