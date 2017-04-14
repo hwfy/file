@@ -102,7 +102,7 @@ func RemoveLine(fileName, line string) error {
 		return err
 	}
 	//escapes the special character \.+*?()|[]{}^$
-	line = regexp.QuoteMeta(line)
+	line = strings.TrimSpace(regexp.QuoteMeta(line))
 
 	//(. *) can match the beginning or end of the line
 	reg, err := regexp.Compile("(.*)" + line + "(.*)")
