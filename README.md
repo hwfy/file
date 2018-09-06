@@ -36,11 +36,11 @@ func main() {
 	}
 	fmt.Printf("%s : %s\n", dir, names)
 
-	err = file.AppendContent(path, " test append\n")
+	err = file.Write(path, " test append\n")
 	if err != nil {
 		panic(err)
 	}
-	content, err := file.GetContent(path)
+	content, err := file.Read(path)
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +50,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	content, err = file.GetContent(path)
+	content, err = file.Read(path)
 	if err != nil {
 		panic(err)
 	}

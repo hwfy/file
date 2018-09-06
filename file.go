@@ -20,10 +20,21 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
 )
+
+// MkDir if the directory does not exist it is created,
+// you can specify multiple directory names
+func MkDir(paths ...string) {
+	for _, path := range paths {
+		if _, err := os.Stat(path); err != nil {
+			os.Mkdir(path, os.ModePerm)
+		}
+	}
+}
 
 // Save save the file to the specified directory and create it if the file or directory does not exist
 func Save(dirName, fileName string, fileBuf []byte) (int64, error) {
@@ -42,32 +53,8 @@ func Save(dirName, fileName string, fileBuf []byte) (int64, error) {
 	return io.Copy(file, buf)
 }
 
-// Del delete all matching files,such as Del(library, book)
-//
-// -library ( before )
-//|____book_1.go
-//|____book_2.go
-//|____food_1.go
-// -library ( after )
-//|____food_1.go
-func Del(dirName, fileName string) error {
-	err := filepath.Walk(dirName, func(path string, f os.FileInfo, err error) error {
-		if f == nil {
-			return err
-		}
-		if f.IsDir() {
-			return nil
-		}
-		if strings.Contains(f.Name(), fileName) {
-			return os.Remove(path)
-		}
-		return nil
-	})
-	return err
-}
-
-// AppendContent append content to file if the content is repeated will be ignored
-func AppendContent(fileName, content string) error {
+// Write append content to file if the content is repeated will be ignored
+func Write(fileName, content string) error {
 	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		return err
@@ -90,9 +77,38 @@ func AppendContent(fileName, content string) error {
 	return nil
 }
 
-// GetContent gets the contents of the specified file
-func GetContent(fileName string) ([]byte, error) {
+// Read gets the contents of the specified file
+func Read(fileName string) ([]byte, error) {
 	return ioutil.ReadFile(fileName)
+}
+
+// RemoveSame delete all matching files,such as Del(library, book)
+//
+// -library ( before )
+//|____book_1.go
+//|____book_2.go
+//|____food_1.go
+// -library ( after )
+//|____food_1.go
+func RemoveSame(dirName, fileName string) error {
+	err := filepath.Walk(dirName, func(path string, f os.FileInfo, err error) error {
+		if f == nil {
+			return err
+		}
+		if f.IsDir() {
+			return nil
+		}
+		if strings.Contains(f.Name(), fileName) {
+			return os.Remove(path)
+		}
+		return nil
+	})
+	return err
+}
+
+// Remove delete the specified file
+func Remove(path string) error {
+	return os.Remove(filepath.Clean(path))
 }
 
 // RemoveLine delete the specified row according to the character line
@@ -114,23 +130,14 @@ func RemoveLine(fileName, line string) error {
 	return ioutil.WriteFile(fileName, []byte(text), 0777)
 }
 
-// MkDir if the directory does not exist it is created, you can specify multiple directory names
-func MkDir(paths ...string) {
-	for _, path := range paths {
-		if _, err := os.Stat(path); err != nil {
-			os.Mkdir(path, os.ModePerm)
-		}
-	}
-}
-
-// Names if the current directory exists to return a map
-// key is the file name, value is to remove the underscore first character in the file name
+// Names if the current directory exists to return a map key is the file name,
+// value is to remove the underscore first character in the file name
 // -library
 //|____book_a.go
 //|____book_b.go
 //|____food_c.go
 //
-// Names(library): map[string]string{"book_a":"Booka","book_b":"Bookb","food_c":"Foodc"}
+// Names(library): map[string]string{"book_a":"BookA","book_b":"BookB","food_c":"FoodC"}
 func Names(dirName string) (map[string]string, error) {
 	list := make(map[string]string)
 
@@ -148,9 +155,44 @@ func Names(dirName string) (map[string]string, error) {
 		//Remove the underline
 		items := strings.Split(prefix[0], "_")
 		//Combination of strings
-		name = strings.Join(items, "")
-
-		list[prefix[0]] = strings.Title(name)
+		for i := 0; i < len(items); i++ {
+			items[i] = strings.Title(items[i])
+		}
+		list[prefix[0]] = strings.Join(items, "")
 	}
 	return list, nil
+}
+
+// Generator generates a go file based on name and source code and
+// automatically introduces the package name
+func Generator(path, code string) error {
+	// format code
+	cmd := exec.Command("gofmt")
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return err
+	}
+
+	io.WriteString(stdin, code)
+	stdin.Close()
+
+	bytes, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("Failed to generate file：" + path + " syntax error")
+	}
+	// write file
+	shortPath := filepath.Clean(path + ".go")
+
+	file, err := os.Create(shortPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.Write(bytes)
+	if err != nil {
+		return err
+	}
+	// import package
+	return exec.Command("goimports", "-w", shortPath).Run()
 }

@@ -34,7 +34,7 @@ func TestFile(t *testing.T) {
 		}
 	}
 
-	err := Del(dir, "book")
+	err := RemoveSame(dir, "book")
 	if err != nil {
 		t.Error(err)
 	}
@@ -47,7 +47,7 @@ func TestFile(t *testing.T) {
 		t.Errorf("The value of food_1 should be Food1, but it is %s", names["food_1"])
 	}
 
-	err = AppendContent(path, " test append\n")
+	err = Write(path, " test append\n")
 	if err != nil {
 		t.Error(err)
 	}
@@ -57,7 +57,7 @@ func TestFile(t *testing.T) {
 		t.Error(err)
 	}
 
-	content, err := GetContent(path)
+	content, err := Read(path)
 	if err != nil {
 		t.Error(err)
 	}
